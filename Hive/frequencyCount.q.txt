@@ -1,0 +1,100 @@
+Chang Hyun Lee, Frank Chu
+N12218805
+
+11/19/14
+For this homework, we made some changes to the history table such that the pre-processed version splits the times into month, day, year, hour, and minute. We will run the aggregation queries to see the actual results using the history data.
+
+# create another table
+create external table history_table(tripduration int, start_id string, start_name string, start_lat float, start_long float, end_id string, end_name string, end_lat float, end_long float, bikeid string, usertype string, birthyear string, gender string, starttime_month string, starttime_day string, starttime_year string, starttime_hour string, starttime_min string, stoptime_month string, stoptime_day string, stoptime_year string, stoptime_hour string, stoptime_min string, garbage bigint) row format delimited fields terminated by ','  location  ‘/user/cl1568/Preprocess_MapReduce/part-r-00000’;
+
+
+
+# count 
+select start_name, end_name, count(*) as count from history_table group by start_name, end_name order by count asc;
+
+select start_name, end_name, count(*) as count from history_table where usertype = “ Subscriber” group by start_name, end_name order by count asc;
+
+select start_name, end_name, count(*) as count from history_table where usertype = “ Customer” group by start_name, end_name order by count asc;
+
+# count by the hours attribute
+select starttime_hour, stoptime_hour, count(*) as count from history_table where usertype = “ Subscriber” group by starttime_hour, stoptime_hour order by count asc;
+
+# count by the hours attribute
+select starttime_hour, starttime_min, stoptime_hour, stopptime_min, count(*) as count from history_table where usertype = “ Subscriber” group by starttime_hour, starttime_min, stoptime_hour, stoptime_min order by count asc;
+
+# count by the hours and minutes attribute
+select starttime_hour, stratime_min, stoptime_hour, stoptime_min, count(*) as count from history_table where usertype = " Customer” group by starttime_hour, stratime_min, stoptime_hour, stoptime_min order by count asc; 
+
+# seasonal effect
+select starttime_month, stoptime_month, count(*) as count from history_table where usertype = “ Subscriber” group by starttime_month, stoptime_month order by count asc;
+
+select starttime_month, stoptime_month, count(*) as count from history_table where usertype = “ Customer” group by starttime_month, stoptime_month order by count asc;
+
+# birthyear
+select birthyear, count(*) as count from history_table where usertype = " Subscriber" group by birthyear order by count asc;
+
+# gender 
+select gender, count(*) as count from history_table where usertype = " Subscriber" group by gender order by count asc;
+
+select starttime_hour, count(*) as count from history_table where usertype = “ Subscriber” and gender = 1 group by starttime_hour, stoptime_hour order by count asc;
+
+select starttime_hour, count(*) as count from history_table where usertype = “ Subscriber” and gender = 2 group by starttime_hour, stoptime_hour order by count asc;
+
+select starttime_month, stoptime_month, count(*) as count from history_table where usertype = “ Subscriber” and gender = 1 group by starttime_month, stoptime_month order by count asc;
+
+select starttime_month, stoptime_month, count(*) as count from history_table where usertype = “ Subscriber” and gender = 2 group by starttime_month, stoptime_month order by count asc;
+
+select start_name, end_name, count(*) as count from history_table where usertype = “ Subscriber” and gender = 1 group by start_name, end_name order by count asc;
+
+select start_name, end_name, count(*) as count from history_table where usertype = “ Subscriber” and gender = 2 group by start_name, end_name order by count asc;
+
+select start_name, end_name, starttime_hour, stoptime_hour, count(*) as count from history_table where usertype = " Subscriber" and gender = 1 group by start_name, end_name, starttime_hour, stoptime_hour order by count asc;  
+
+
+
+# weird behavior in females
+# unlike the males, whose popular locations are the workplaces, the females behave quite 
+# differently
+select end_name, stoptime_hour, stoptime_min, count(*) as count from history_table where usertype = “ Subscriber” and gender = 2 group by start_name, end_name,starttime_hour, stratime_min, stoptime_hour, stoptime_min order by count asc;
+
+
+
+select starttime_hour, stratime_min, stoptime_hour, stoptime_min, count(*) as count from history_table where usertype = " Subscriber" and gender = 2 group by starttime_hour, stratime_min, stoptime_hour, stoptime_min order by count asc; 
+
+select start_name, end_name, starttime_hour, stratime_min, count(*) as count from history_table where usertype = " Subscriber" and gender = 2 group by start_name, end_name, starttime_hour, stratime_min order by count asc;  
+
+select start_name, end_name, starttime_hour, stoptime_hour, count(*) as count from history_table where usertype = " Subscriber" and gender = 2 group by start_name, end_name, starttime_hour, stoptime_hour order by count asc;  
+
+# the station names subscribers go to by birthyear
+select birthyear, start_name, end_name, count(*) as count from history_table where usertype = " Subscriber" group by birthyear, start_name, end_name order by count asc; 
+
+
+# the time duration by birth year
+select birthyear, starttime_hour, stoptime_hour, count(*) as count from history_table where usertype = “ Subscriber” group by birthyear, starttime_hour, stoptime_hour order by count asc;
+
+# what time is the busiest time by season for subscribers?
+select starttime_month, stoptime_month, starttime_hour, stoptime_hour, count(*) as count from history_table where usertype = “ Subscriber” group by starttime_month, stoptime_month, starttime_hour, stoptime_hour order by count asc;
+# already did this, actually
+
+# what time is the busiest time by season for customers?
+select starttime_month, stoptime_month, starttime_hour, stoptime_hour, count(*) as count from history_table where usertype = “ Customer” group by starttime_month, stoptime_month, starttime_hour, stoptime_hour order by count asc;
+
+# how long do subscribers travel season by season?
+select starttime_month, stoptime_month, tripduration, count(*) as count from history_table where usertype = " Subscriber" group by starttime_month, stoptime_month, tripduration order by count asc; 
+
+# how long do customers travel season by season?
+select starttime_month, stoptime_month, tripduration, count(*) as count from history_table where usertype = " Customer” group by starttime_month, stoptime_month, tripduration order by count asc; 
+
+# does season and location have something to do with each other?
+select starttime_month, stoptime_month, start_name, end_name, count(*) as count from history_table where usertype = “ Subscriber” group by starttime_month, stoptime_month, start_name, end_name order by count asc;
+
+
+select birthyear, tripduration, count(*) as count from history_table where usertype = “ Subscriber” group by birthyear, tripduration order by count asc;
+
+
+
+
+
+# by gender
+# what is the popular route for male/female?
+

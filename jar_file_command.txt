@@ -1,0 +1,31 @@
+./data/HistoryData/  ./data/RouteCountResult/part-r-00000  RouteCount  RouteCountResult/
+
+./data/Customer/ ./data/RouteCountCustomerResult/part-r-00000 RouteCountCustomer RouteCountCustomerResult/
+
+./data/Subscriber/ ./data/RouteCountSubscriberResult/part-r-00000 RouteCountSubscriber RouteCountSubscriberResult/
+
+./data/HistoryData/
+
+
+# moving file to the hadoop cluster
+scp Preprocess_MapReduce.java dumbo:
+
+
+# Preprocess files
+javac -cp /opt/cloudera/parcels/CDH/lib/hadoop/*:/opt/cloudera/parcels/CDH/lib/hadoop/client-0.20/* -d ./Preprocess_MapReduce/ Preprocess_MapReduce.java
+
+jar -cvf Preprocess_MapReduce.jar -C ./Preprocess_MapReduce/ .
+
+hadoop jar Preprocess_MapReduce.jar Preprocess_MapReduce ./citibike_history/  ./Preprocess_MapReduce/part-r-00000  Preprocess_MapReduce  ./Preprocess_MapReduce/
+
+hadoop fs -rmr Preprocess_MapReduce
+
+
+# Attributes Count
+javac -cp /opt/cloudera/parcels/CDH/lib/hadoop/*:/opt/cloudera/parcels/CDH/lib/hadoop/client-0.20/* -d ./Route_Time_Usertype_MapReduce/ Route_Time_Usertype_MapReduce.java
+
+jar -cvf Route_Time_Usertype_MapReduce.jar -C ./Route_Time_Usertype_MapReduce/ .
+
+hadoop jar Route_Time_Usertype_MapReduce.jar Route_Time_Usertype_MapReduce ./Preprocess_MapReduce/  ./Route_Time_Usertype_MapReduce/part-r-00000  Route_Time_Usertype_MapReduce  ./Route_Time_Usertype_MapReduce/
+
+hadoop fs -rmr Preprocess_MapReduce
